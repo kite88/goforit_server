@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func Logout(userId uint) {
+func Logout(userId uint64) {
 	var TokenModel models.TokenModel
 	db.DB().Model(&TokenModel).Where("user_id = ?", userId).Update("expire", time.Now().Unix())
 }
@@ -24,7 +24,7 @@ func Login(username string, password string) (models.UserModel, int) {
 	return user, 0
 }
 
-func Token(userId uint, token string) string {
+func Token(userId uint64, token string) string {
 	var TokenModel models.TokenModel
 	var count int
 	db.DB().Model(&TokenModel).Where("user_id = ?", userId).Count(&count)
@@ -49,7 +49,7 @@ func Token(userId uint, token string) string {
 	return ""
 }
 
-func GetUserIdByToken(token string) uint {
+func GetUserIdByToken(token string) uint64 {
 	var TokenModel models.TokenModel
 	err := db.DB().Where("token = ?", token).First(&TokenModel).Error
 	if err == nil {

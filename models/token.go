@@ -1,10 +1,10 @@
 package models
 
 type TokenModel struct {
-	ID     uint
+	ID     uint64
 	Token  string
 	Expire int64
-	UserId uint
+	UserId uint64
 }
 
 func (TokenModel) TableName() string {

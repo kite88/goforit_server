@@ -10,11 +10,16 @@ import (
 
 type BaseController struct {
 	beego.Controller
-	Uid        uint
+	Uid uint64
 }
 
 type NoneObject struct{}
 type NoneArray []struct{}
+
+type baseRequest struct {
+	PageIndex string `json:"pageIndex"`
+	PageSize  string `json:"pageSize"`
+}
 
 type data struct {
 	Code   int64       `json:"code"`
@@ -53,7 +58,7 @@ func (t *BaseController) CreateToken(part string) string {
 	return utils.Md5(str)
 }
 
-func (t *BaseController) NeedLogin(b bool) uint {
+func (t *BaseController) NeedLogin(b bool) uint64 {
 	var tokenStr string
 	var header = t.Ctx.Request.Header
 	token := header["Token"]

@@ -3,6 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"goforit/services/MemoService"
+	"goforit/utils"
+	"strconv"
 	"strings"
 )
 
@@ -11,16 +13,24 @@ type MemoController struct {
 }
 
 type memoReq struct {
-	ID         uint   `json:"id"`
-	Title      string `json:"title"`
-	Content    string `json:"content"`
-	ClassifyId uint   `json:"classify_id"`
+	baseRequest
+	ID            uint64 `json:"id"`
+	Title         string `json:"title"`
+	Content       string `json:"content"`
+	ClassifyId    uint64 `json:"classify_id"`
+	ClassifyIdStr string `json:"classify_id_str"`
 }
 
 // @router / [get]
 func (m *MemoController) GetMemo() {
 	userId := m.NeedLogin(true)
-	m.Normal(MemoService.GetMemo(userId), "请求成功")
+	var data memoReq
+	json.Unmarshal(utils.FormatQuery(m.Input().Encode()), &data)
+	pageIndex, _ := strconv.Atoi(data.PageIndex)
+	pageSize, _ := strconv.Atoi(data.PageSize)
+	title := strings.Trim(data.Title, " ")
+	classifyId := data.ClassifyIdStr
+	m.Normal(MemoService.GetMemo(userId, title, classifyId, uint64(pageIndex), uint64(pageSize)), "请求成功")
 }
 
 // @router / [post]
@@ -90,8 +100,8 @@ func (m *MemoController) Delete() {
 }
 
 type memoClassifyReq struct {
-	Name string
-	ID   uint
+	Name string `json:"name"`
+	ID   uint64 `json:"id"`
 }
 
 // @router /classify [get]
