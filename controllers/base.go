@@ -10,8 +10,11 @@ import (
 
 type BaseController struct {
 	beego.Controller
-	Uid uint
+	Uid        uint
 }
+
+type NoneObject struct{}
+type NoneArray []struct{}
 
 type data struct {
 	Code   int64       `json:"code"`
@@ -39,7 +42,7 @@ func (t *BaseController) NormalException(msg string) {
 	t.Data["json"] = data{
 		Code:   failCode,
 		Msg:    msg,
-		Result: nil,
+		Result: NoneObject{},
 	}
 	t.ServeJSON()
 	t.StopRun()
@@ -63,7 +66,7 @@ func (t *BaseController) NeedLogin(b bool) uint {
 		t.Data["json"] = data{
 			Code:   authCode,
 			Msg:    "请登录",
-			Result: nil,
+			Result: NoneObject{},
 		}
 		t.ServeJSON()
 		t.StopRun()

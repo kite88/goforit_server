@@ -1,12 +1,12 @@
 package models
 
-type Token struct {
+type TokenModel struct {
 	ID     uint
 	Token  string
 	Expire int64
 	UserId uint
 }
 
-func (Token) TableName() string {
+func (TokenModel) TableName() string {
 	return "go_tokens"
 }

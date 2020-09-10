@@ -12,8 +12,8 @@ type UserController struct {
 }
 
 type loginRequest struct {
-	Username string
-	Password string
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type loginResponse struct {
@@ -24,13 +24,13 @@ type loginResponse struct {
 
 // @router /login [post]
 func (u *UserController) Login() {
-	var param loginRequest
-	data := u.Ctx.Input.RequestBody
-	json.Unmarshal(data, &param)
-	if strings.Trim(param.Username, " ") == "" || strings.Trim(param.Password, " ") == "" {
+	var data loginRequest
+	param := u.Ctx.Input.RequestBody
+	json.Unmarshal(param, &data)
+	if strings.Trim(data.Username, " ") == "" || strings.Trim(data.Password, " ") == "" {
 		u.NormalException("用户名或者密码不能为空")
 	}
-	user, count := AuthService.Login(param.Username, param.Password)
+	user, count := AuthService.Login(data.Username, data.Password)
 	if count == 0 {
 		u.NormalException("用户不存在或者密码有误")
 	}
@@ -43,12 +43,12 @@ func (u *UserController) Login() {
 		}
 		u.Normal(result, "登录成功")
 	}
-	u.Normal(nil, "请求成功")
+	u.Normal(NoneObject{}, "请求成功")
 }
 
 // @router /logout [get]
 func (u *UserController) Logout() {
 	userId := u.NeedLogin(true)
 	AuthService.Logout(userId)
-	u.Normal(nil,"退出成功")
+	u.Normal(NoneObject{}, "退出成功")
 }
