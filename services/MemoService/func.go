@@ -1,6 +1,7 @@
 package MemoService
 
 import (
+	"fmt"
 	"goforit/db"
 	"goforit/models"
 	"goforit/utils/Page"
@@ -11,7 +12,8 @@ var (
 	commonWhere string = "user_id = ? AND delete_time = ?"
 )
 
-func GetMemo(userId uint64, title string, classifyId string, pageIndex uint64, pageSize uint64) (result Page.Lists) {
+func GetMemo(userId uint64, title string, classifyId uint64, pageIndex uint64, pageSize uint64) (result Page.Lists) {
+	var MemosModel models.MemosModel
 	var list []models.MemosModel
 	var count uint64
 	var whereTitle = ""
@@ -19,16 +21,19 @@ func GetMemo(userId uint64, title string, classifyId string, pageIndex uint64, p
 	if title != "" {
 		whereTitle = "title LIKE " + "'%" + title + "%'"
 	}
-	if classifyId != "" {
-		whereClassifyId = "classify_id = " + classifyId
+	if classifyId > 0 {
+		whereClassifyId = fmt.Sprintf("classify_id = %d", classifyId)
 	}
-	db.DB().Model(&models.MemosModel{}).Where(commonWhere, userId, 0).
+	db.DB().Model(&MemosModel).Where(commonWhere, userId, 0).
 		Where(whereTitle).Where(whereClassifyId).
 		Count(&count)
 	offset, length, pageResult := Page.Make(count, pageIndex, pageSize)
-	db.DB().Where(commonWhere, userId, 0).
+	db.DB().Model(&MemosModel).
+		Where(commonWhere, userId, 0).
 		Where(whereTitle).Where(whereClassifyId).
 		Offset(offset).Limit(length).
+		Preload("MemoClassify").
+		Order("create_time desc").
 		Find(&list)
 	result.Page = pageResult
 	result.List = list

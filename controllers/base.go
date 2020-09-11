@@ -17,8 +17,8 @@ type NoneObject struct{}
 type NoneArray []struct{}
 
 type baseRequest struct {
-	PageIndex string `json:"pageIndex"`
-	PageSize  string `json:"pageSize"`
+	PageIndex uint64 `json:"pageIndex"`
+	PageSize  uint64 `json:"pageSize"`
 }
 
 type data struct {
