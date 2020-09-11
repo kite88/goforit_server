@@ -27,7 +27,7 @@ type data struct {
 	Result interface{} `json:"result"`
 }
 
-var (
+const (
 	successCode int64 = 0
 	failCode    int64 = -1
 	authCode    int64 = -10
