@@ -73,24 +73,43 @@ func DeleteMemo(id uint64, userId uint64) int64 {
 	return count
 }
 
-func FindMemoClassify(id uint64, userId uint64) (models.MemoClassifyModel, int64) {
+func FindMemoClassify(id uint64, userId uint64, isPid bool) (models.MemoClassifyModel, int64) {
 	var memoClassify models.MemoClassifyModel
 	var count int64
-	db.DB().Where(commonWhere, userId, 0).Where("id = ?", id).First(&memoClassify).Count(&count)
+	var pidWhere string
+	if isPid == true {
+		pidWhere = "pid = 0"
+	}
+	db.DB().Where(commonWhere, userId, 0).
+		Where("id = ?", id).
+		Where(pidWhere).
+		First(&memoClassify).Count(&count)
 	return memoClassify, count
 }
 
 func GetMemoClassify(userId uint64) []models.MemoClassifyModel {
 	var list []models.MemoClassifyModel
 	db.DB().Where(commonWhere, userId, 0).Find(&list)
-	return list
+	return recursionMemoClassify(0, list)
 }
 
-func CreateMemoClassify(name string, userId uint64) bool {
+func recursionMemoClassify(pid uint64, list []models.MemoClassifyModel) []models.MemoClassifyModel {
+	var nList []models.MemoClassifyModel
+	for _, value := range list {
+		if pid == value.Pid {
+			child := recursionMemoClassify(value.ID, list)
+			nList = append(append(nList, value), child...)
+		}
+	}
+	return nList
+}
+
+func CreateMemoClassify(pid uint64, name string, userId uint64) bool {
 	err := db.DB().Create(&models.MemoClassifyModel{
 		Name:       name,
 		CreateTime: time.Now().Unix(),
 		UserId:     userId,
+		Pid:        pid,
 	}).Error
 	if err == nil {
 		return true
@@ -114,4 +133,13 @@ func DeleteMemoClassify(id uint64, userId uint64) int64 {
 		Where(commonWhere, userId, 0).Where("id = ?", id).
 		Update("delete_time", time.Now().Unix()).RowsAffected
 	return count
+}
+
+func FindMemoClassifyChild(pid uint64, userId uint64) ([]models.MemoClassifyModel, int64) {
+	var list []models.MemoClassifyModel
+	var count int64
+	db.DB().Where(commonWhere, userId, 0).
+		Where("pid = ?", pid).
+		Find(&list).Count(&count)
+	return list, count
 }

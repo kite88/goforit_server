@@ -22,6 +22,7 @@ type memoReq struct {
 type memoClassifyReq struct {
 	Name string `json:"name"`
 	ID   uint64 `json:"id"`
+	Pid  uint64 `json:"pid"`
 }
 
 // @router / [get]
@@ -47,7 +48,7 @@ func (m *MemoController) Create() {
 	if data.ClassifyId == 0 {
 		m.NormalException("分类ID不能为空")
 	}
-	if _, count := MemoService.FindMemoClassify(data.ClassifyId, userId); count == 0 {
+	if _, count := MemoService.FindMemoClassify(data.ClassifyId, userId, false); count == 0 {
 		m.NormalException("分类不存在")
 	}
 	if true == MemoService.CreateMemo(data.Title, data.Content, data.ClassifyId, userId) {
@@ -74,7 +75,7 @@ func (m *MemoController) Edit() {
 	if data.ClassifyId == 0 {
 		m.NormalException("分类ID不能为空")
 	}
-	if _, count := MemoService.FindMemoClassify(data.ClassifyId, userId); count == 0 {
+	if _, count := MemoService.FindMemoClassify(data.ClassifyId, userId, false); count == 0 {
 		m.NormalException("分类不存在")
 	}
 	if MemoService.EditMemo(data.ID, data.Title, data.Content, data.ClassifyId, userId) > 0 {
@@ -113,7 +114,10 @@ func (m *MemoController) CreateClassify() {
 	if strings.Trim(data.Name, " ") == "" {
 		m.NormalException("分类名称不能为空")
 	}
-	if true == MemoService.CreateMemoClassify(data.Name, userId) {
+	if _, count := MemoService.FindMemoClassify(data.Pid, userId, true); count == 0 && data.Pid != 0 {
+		m.NormalException("父分类不存在")
+	}
+	if true == MemoService.CreateMemoClassify(data.Pid, data.Name, userId) {
 		m.Normal(NoneObject{}, "创建成功")
 	} else {
 		m.NormalException("创建失败")
@@ -147,6 +151,9 @@ func (m *MemoController) DeleteClassify() {
 	json.Unmarshal(m.Ctx.Input.RequestBody, &data)
 	if data.ID == 0 {
 		m.NormalException("ID不能为空")
+	}
+	if _, co := MemoService.FindMemoClassifyChild(data.ID, userId); co > 0 {
+		m.NormalException("请先删除子类")
 	}
 	if count := MemoService.DeleteMemoClassify(data.ID, userId); count > 0 {
 		m.Normal(NoneObject{}, "删除成功")

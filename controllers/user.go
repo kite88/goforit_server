@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"goforit/services/AuthService"
+	"goforit/services/LogService"
 	"strconv"
 	"strings"
 )
@@ -41,6 +42,7 @@ func (u *UserController) Login() {
 			Username: user.Username,
 			Token:    token,
 		}
+		LogService.CreateLogs(user.ID, 1, "登录成功")
 		u.Normal(result, "登录成功")
 	}
 	u.Normal(NoneObject{}, "请求成功")
@@ -50,5 +52,6 @@ func (u *UserController) Login() {
 func (u *UserController) Logout() {
 	userId := u.NeedLogin(true)
 	AuthService.Logout(userId)
+	LogService.CreateLogs(userId, 2, "退出登录")
 	u.Normal(NoneObject{}, "退出成功")
 }

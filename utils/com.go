@@ -4,8 +4,10 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/sony/sonyflake"
 	"strconv"
 	"strings"
+	"github.com/rs/xid"
 )
 
 func Md5(str string) string {
@@ -43,4 +45,15 @@ func FormatQuery(strParam string, transitionField ...string) []byte {
 func IsNumber(s string) (bool, float64) {
 	result, err := strconv.ParseFloat(s, 64)
 	return err == nil, result
+}
+
+func GenMachineID() string {
+	flake := sonyflake.NewSonyflake(sonyflake.Settings{})
+	id, _ := flake.NextID()
+	return fmt.Sprintf("%d", id)
+}
+
+func GenXid() string {
+	id := xid.New()
+	return id.String()
 }
