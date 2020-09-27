@@ -30,7 +30,7 @@ func (m *MemoController) GetMemo() {
 	userId := m.NeedLogin(true)
 	var data memoReq
 	json.Unmarshal(utils.FormatQuery(m.Input().Encode(), "pageIndex", "pageSize", "classify_id"), &data)
-	title := strings.Trim(string(data.Title), " ")
+	title := strings.Trim(data.Title, " ")
 	m.Normal(MemoService.GetMemo(userId, title, data.ClassifyId, data.PageIndex, data.PageSize), "请求成功")
 }
 

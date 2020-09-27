@@ -4,10 +4,10 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/rs/xid"
 	"github.com/sony/sonyflake"
 	"strconv"
 	"strings"
-	"github.com/rs/xid"
 )
 
 func Md5(str string) string {

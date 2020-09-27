@@ -5,6 +5,8 @@ import (
 	"goforit/db"
 	"goforit/models"
 	"goforit/utils/Page"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,7 +24,8 @@ func GetMemo(userId uint64, title string, classifyId uint64, pageIndex uint64, p
 		whereTitle = "title LIKE " + "'%" + title + "%'"
 	}
 	if classifyId > 0 {
-		whereClassifyId = fmt.Sprintf("classify_id = %d", classifyId)
+		classifyIdS := FindMemoClassifyChildIdS(classifyId, true)
+		whereClassifyId = fmt.Sprintf("classify_id in (%s)", strings.Join(classifyIdS, ","))
 	}
 	db.DB().Model(&MemosModel).Where(commonWhere, userId, 0).
 		Where(whereTitle).Where(whereClassifyId).
@@ -35,6 +38,16 @@ func GetMemo(userId uint64, title string, classifyId uint64, pageIndex uint64, p
 		Preload("MemoClassify").
 		Order("create_time desc").
 		Find(&list)
+	var pidArr []uint64
+	for _, v := range list {
+		if v.MemoClassify.Pid > 0 {
+			pidArr = append(pidArr, v.MemoClassify.Pid)
+		}
+	}
+	for k, v := range list {
+		list[k].MemoClassify.PidMemoClassify.ID = v.MemoClassify.Pid
+		list[k].MemoClassify.PidMemoClassify.Name = GetMemoClassifyNameById(v.MemoClassify.Pid, GetMemoClassifyS(pidArr))
+	}
 	result.Page = pageResult
 	result.List = list
 	return result
@@ -93,6 +106,21 @@ func GetMemoClassify(userId uint64) []models.MemoClassifyModel {
 	return recursionMemoClassify(0, list)
 }
 
+func GetMemoClassifyS(idArr []uint64) []models.MemoClassifyModel {
+	var list []models.MemoClassifyModel
+	db.DB().Where("id in (?)", idArr).Find(&list)
+	return list
+}
+
+func GetMemoClassifyNameById(id uint64, list []models.MemoClassifyModel) string {
+	for _, value := range list {
+		if value.ID == id {
+			return value.Name
+		}
+	}
+	return ""
+}
+
 func recursionMemoClassify(pid uint64, list []models.MemoClassifyModel) []models.MemoClassifyModel {
 	var nList []models.MemoClassifyModel
 	for _, value := range list {
@@ -142,4 +170,17 @@ func FindMemoClassifyChild(pid uint64, userId uint64) ([]models.MemoClassifyMode
 		Where("pid = ?", pid).
 		Find(&list).Count(&count)
 	return list, count
+}
+
+func FindMemoClassifyChildIdS(pid uint64, isSelf bool) []string {
+	var idList []string
+	var list []models.MemoClassifyModel
+	db.DB().Where("pid = ?", pid).Find(&list)
+	for _, v := range list {
+		idList = append(idList, strconv.FormatInt(int64(v.ID), 10))
+	}
+	if isSelf {
+		idList = append(idList, strconv.FormatInt(int64(pid), 10))
+	}
+	return idList
 }
