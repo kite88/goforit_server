@@ -2,3 +2,4 @@
 *.exe~
 /.idea
 goforit.tar.gz
+/vendor

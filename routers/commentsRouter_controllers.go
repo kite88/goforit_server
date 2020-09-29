@@ -7,6 +7,15 @@ import (
 
 func init() {
 
+    beego.GlobalControllerRouter["goforit/controllers:AccountController"] = append(beego.GlobalControllerRouter["goforit/controllers:AccountController"],
+        beego.ControllerComments{
+            Method: "ModifyPassword",
+            Router: "/modifyPassword",
+            AllowHTTPMethods: []string{"put"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["goforit/controllers:MemoController"] = append(beego.GlobalControllerRouter["goforit/controllers:MemoController"],
         beego.ControllerComments{
             Method: "GetMemo",
